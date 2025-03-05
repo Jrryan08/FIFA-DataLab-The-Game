@@ -5,6 +5,11 @@ import seaborn as sns
 import numpy as np
 import sklearn  # pip install scikit-learn 
 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+
 from PIL import Image
 import codecs
 import streamlit.components.v1 as components
@@ -161,5 +166,55 @@ elif selected == "02: Viz":
 elif selected == "03: Pred":
     st.markdown("### :violet[Data Prediction]")
     st.markdown("<p style='font-size:20px; color:white;'>Select a dataset</p>", unsafe_allow_html=True)
-    dataset_option = st.selectbox("FIFA Version: ",list(datasets.keys()));
+    dataset_option = st.selectbox("FIFA Version: ", list(datasets.keys()))
+
+    df = pd.read_csv(datasets[dataset_option])
+
+    # Select features for prediction
+    st.markdown("### :violet[Select Prediction Features]")
+    features = st.multiselect(
+        "Choose Features to Predict Wages", 
+        ["Age", "Overall", "Potential", "Acceleration", "SprintSpeed", 
+         "Strength", "Stamina", "Finishing", "Dribbling", "BallControl"]
+    )
+
+    if st.button("Predict Wages") and features:
+        # Prepare data
+        X = df[features]
+        y = df['Wage(€K)']
+
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Train model
+        model = LinearRegression()
+        model.fit(X_train, y_train)
+
+        # Predict and evaluate
+        y_pred = model.predict(X_test)
+        
+        # Display results
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Mean Absolute Error", 
+                      f"€{mean_absolute_error(y_test, y_pred):.2f}K")
+        
+        with col2:
+            st.metric("Mean Squared Error", 
+                      f"€{mean_squared_error(y_test, y_pred):.2f}K")
+        
+        with col3:
+            st.metric("R² Score", 
+                      f"{r2_score(y_test, y_pred):.2f}")
+
+        # Feature importance
+        importance = pd.DataFrame({
+            'feature': features,
+            'importance': np.abs(model.coef_)
+        }).sort_values('importance', ascending=False)
+
+        st.markdown("### :violet[Feature Importance]")
+        st.dataframe(importance)
+
         

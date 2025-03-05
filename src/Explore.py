@@ -217,4 +217,34 @@ elif selected == "03: Pred":
         st.markdown("### :violet[Feature Importance]")
         st.dataframe(importance)
 
+       # Visualization: Actual vs Predicted Wages
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y_test, y_pred, alpha=0.5)
+        plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
+        plt.xlabel("Actual Wages (€K)")
+        plt.ylabel("Predicted Wages (€K)")
+        plt.title("Actual vs Predicted Player Wages")
+        
+        # Add correlation annotation
+        correlation = np.corrcoef(y_test, y_pred)[0, 1]
+        plt.annotate(f'Correlation: {correlation:.2f}', 
+                     xy=(0.05, 0.95), 
+                     xycoords='axes fraction')
+        
+        # Streamlit rendering of the plot
+        st.markdown("### :violet[Actual vs Predicted Wages]")
+        st.pyplot(plt)
+
+        # Residual Plot
+        plt.figure(figsize=(10, 6))
+        residuals = y_test - y_pred
+        plt.scatter(y_pred, residuals, alpha=0.5)
+        plt.xlabel("Predicted Wages (€K)")
+        plt.ylabel("Residuals (Actual - Predicted)")
+        plt.title("Residual Plot")
+        plt.axhline(y=0, color='r', linestyle='--')
+        
+        st.markdown("### :violet[Residual Plot]")
+        st.pyplot(plt)
+
         
